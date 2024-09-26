@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Gcode Checker</title>
+</head>
+
+<body>
+    <p1>Gcode Checker</p1><br>
+    <input type="file" name="inputfile" id="inputfile">
+    <br>
+    <p>下のテキストボックスに記入されたもの以外のコードが含まれていないかを調べます。</p>
+    <label style="width: 100%; display: inline-block">命令：
+        <input type="text" id="nameText" value="%,G90,G0,G1,G2,G3,M3,M5,M30" style="width:90%"></label>
+    <br>
+    <label style="width: 100%; display: inline-block">数値：
+        <input type="text" id="nameText2" value="X,Y,Z,F,S,I,J" style="width:90%"></label>
+    <br>
+    <label><input type="checkbox" id="hide">エラー箇所のみ表示</label>
+
+    <pre id="output"></pre>
+
+    <script type="text/javascript">
+        let noterrorlist=[];
+        document.getElementById('inputfile')
+            .addEventListener('change', function () {
+                let check_list=nameText.value.split(",");
+                let check_nlist=nameText2.value.split(",");;
+                let fr = new FileReader();
+                let textbox_element = document.getElementById('output');
+                while(textbox_element.firstChild){
+                    textbox_element.removeChild(textbox_element.firstChild);
+                }
+                noterrorlist.length=0;
+                fr.onload = function () {
+                    let text= fr.result;
+                    let id_v=0;
+                    for (const element of text.split(/\n/)) {
+                        let new_element = document.createElement('p');
+                        new_element.textContent=id_v+" : "+element;
+                        textbox_element.append(new_element);
+                        new_element.id=id_v;
+                        let c_red=false;
+                        for(const code of element.split(/(?=[A-Z])/)){
+                            let checker=false;
+                            for(const check_code of check_list){
+                                if(code.trim()==check_code){
+                                    checker=true;
+                                }
+                            }
+                            for(const check_n of check_nlist){
+                                if(code.slice(0,1)==check_n){
+                                    checker=true;
+                                }
+                            }
+                            if(checker==false){
+                                c_red=true;
+
+                            }
+                        }
+                        if(c_red){
+                            new_element.style.backgroundColor = "red";
+                        }
+                        else{
+                            noterrorlist.push(id_v);
+                        }
+                        id_v++;
+                    }
+                }
+
+                fr.readAsText(this.files[0]);
+ 
+            })
+        document.getElementById('hide')
+            .addEventListener('change', function () {
+                if(checkbox.checked){  
+                    for (const v of noterrorlist){
+                        let h_element=document.getElementById(v);
+                        h_element.style.display="none";
+                    }
+                    console.log(noterrorlist);
+                }
+                else{
+                    for (const v of noterrorlist){
+                        let h_element=document.getElementById(v);
+                        h_element.style.display="";
+                    }
+                }
+            })
+        let checkbox = document.getElementById('hide');
+    </script>
+</body>
+
+</html>
